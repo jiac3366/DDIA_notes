@@ -76,9 +76,91 @@ disk
 
     - ### Via service calls (Dataflow Through Services: REST and RPC)
 
-        - 
+        - Although SOAP is still used in many large enterprises, it has fallen
+out of favor in most smaller companies, RESTful APIs tend to favor simpler approaches, typically involving less code genera‐
+tion and automated tooling. A definition format such as OpenAPI, also known as
+Swagger, can be used to describe RESTful APIs and produce documentation.
 
+        -  The RPC model tries to make a request to a remote net‐
+work service look the same as calling a function or method in your programming lan‐
+guage, within the same process (this abstraction is called location transparency).
+Although RPC seems convenient at first, the approach is fundamentally flawed [43,
+44]. A network request is very different from a local function call:
+
+            - Network problems are common, so you have to anticipate them,
+for example by retrying a failed request
+
+            - A local function call either returns a result, or throws an exception, or never
+returns (because it goes into an infinite loop or the process crashes). A network
+request has another possible outcome: it may return without a result, due to a
+timeout. In that case, you simply don’t know what happened: if you don’t get a
+response from the remote service, you have no way of knowing whether the
+request got through or not
+
+            - If you retry a failed network request, it could happen that the requests are
+actually getting through, and only the responses are getting lost. In that case,
+retrying will cause the action to be performed multiple times, unless you build a
+mechanism for deduplication (idempotence) into the protocol. Local function
+calls don’t have this problem.
+
+            - When you call a local function, you can efficiently pass it references (pointers) to
+objects in local memory. When you make a network request, all those parameters need to be encoded into a sequence of bytes that can be sent over the network.
+That’s okay if the parameters are primitives like numbers or strings, but quickly
+becomes problematic with larger objects.
+
+            - The client and the service may be implemented in different programming lan‐
+guages, so the RPC framework must translate datatypes from one language into
+another. This can end up ugly, since not all languages have the same types——
+recall JavaScript’s problems with numbers greater than 253, for example (see
+“JSON, XML, and Binary Variants” on page 114).???
+
+        - **All of these factors mean that there’s no point trying to make a remote service look
+too much like a local object in your programming language**, Part of the appeal of REST is that it doesn’t try to hide the fact
+that it’s a network protocol(REST是网络协议，思想可能不是想要直接去调用对方的函数?)
+        
+        - For these reasons, REST seems to be the predominant style for public APIs. **The main
+focus of RPC frameworks is on requests between services owned by the same organi‐
+zation, typically within the same datacenter.**
+
+        - The backward and forward compatibility properties of an RPC scheme are inherited
+from whatever encoding it uses (Thrift, gRPC (Protocol Buffers), and Avro RPC can be evolved according to the
+compatibility rules of the respective encoding format。RPC框架的schema evolution对应于他们的编码格式。) 
+
+        - Service compatibility is made harder by the fact that RPC is often used for communi‐
+cation across organizational boundaries, so the provider of a service often has no
+control over its clients and cannot force them to upgrade. Thus, compatibility needs
+to be maintained for a long time, perhaps indefinitely. If a compatibility-breaking
+change is required, the service provider often ends up maintaining multiple versions
+of the service API side by side
     - ### Via asynchronous message passing (Message-Passing Dataflow)
 
-        - 
-    
+        - Using a message broker has several advantages compared to direct RPC:
+
+            - It can act as a buffer if the recipient is unavailable or overloaded, and thus
+improve system reliability.
+
+            - It can automatically redeliver messages to a process that has crashed, and thus
+prevent messages from being lost.
+
+            - It avoids the sender needing to know the IP address and port number of the
+recipient (which is particularly useful in a cloud deployment where virtual
+machines often come and go).
+
+            - It allows one message to be sent to several recipients.
+            
+            - It logically decouples the sender from the recipient (the sender just publishes
+messages and doesn’t care who consumes them).
+
+        - the sender doesn’t wait
+for the message to be delivered, but simply sends it and then forgets about it.
+
+        - Message brokers typically don’t enforce any particular data model—a message is just
+a sequence of bytes with some metadata, so you can use any encoding format. If the
+encoding is backward and forward compatible, you have the greatest flexibility to
+change publishers and consumers independently and deploy them in any order.
+
+        - **Distributed actor frameworks**, there is less of a fundamental mismatch between local and remote communication
+when using the actor model.  However, if you want to perform roll‐
+ing upgrades of your actor-based application, you still have to worry about forward
+and backward compatibility, Three popular distributed actor frameworks handle message encoding as follows: Akka, Orleans, Erlang OTP 
+
