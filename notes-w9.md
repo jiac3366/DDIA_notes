@@ -60,7 +60,7 @@ other race conditions, and so its isolation becomes serializable
 
 			- Unfortunately, predicate locks do not perform well: if there are many locks by active
 transactions, checking for matching locks becomes time-consuming. For that reason,
-most databases with 2PL actually implement index-range locking (also known as next key locking), which is a simplified approximation of predicate locking
+most databases with 2PL actually implement index-range locking (also known as next key locking 间隙锁), which is a simplified approximation of predicate locking
 
 		- ### Index-range locks
 
@@ -115,7 +115,7 @@ zation conflicts across multiple machines, allowing it to scale to very high thr
 to slow transactions than two-phase locking or serial execution.
 
 
-- ###Summary
+- ### Summary
 
     - good!
 
