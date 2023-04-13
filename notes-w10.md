@@ -3,6 +3,7 @@
 This chapter is a thoroughly pessimistic and depressing overview of things that may
 go wrong in a distributed system
 
+### Unreliable Networks
 
 - ### Faults and Partial Failures
 
@@ -54,7 +55,11 @@ cascading failure (in the extreme case, all nodes declare each other dead, and e
 thing stops working).
 
         - most systems we work with have neither of those guarantees: asyn‐
-chronous networks have unbounded delays (CAN NOT guarantee that every successful request receives a response within time 2d + r)
+chronous networks have unbounded delays (CAN NOT guarantee that every successful request receives a response within time 2d + r) 
+
+        - Timeout时间的确定是动态调整的， automatically adjust time‐
+outs according to the observed response time distribution. This can be done with a
+Phi Accrual failure detector, which is used for example in Akka and Cassandra. TCP retransmission timeouts also work similarly
 
 
         - #### Network congestion and queueing
@@ -79,9 +84,33 @@ variability of network delays
 it avoids some of the reasons for variable network delays）page 284
 
 
+    - ### Synchronous Versus Asynchronous Networks
+
+        - compare datacenter networks to the tradi‐
+tional fixed-line telephone network(**circuit-switched networks**) (non-cellular, non-VoIP)，电话网络预先为线路建立了固定的带宽？延迟是固定的（bounded delay）为什么不能为互联网tcp网络建立同样的机制？
+
+        -  Why do datacenter networks and the internet use **packet-switching networks** ? The answer is
+that they are optimized for bursty traffic. A circuit is good for an audio or video call,
+which needs to transfer a fairly constant number of bits per second for the duration
+of the call. On the other hand, requesting a web page, sending an email, or transfer‐
+ring a file doesn’t have any particular bandwidth requirement—we just want it to
+complete as quickly as possible 电话视频的宽带及时性要求比请求网页和发邮件要高得多。Moreover, using circuits for bursty data transfers wastes network capacity and
+makes transfers unnecessarily slow 使用电路网络要猜本次传输文件需要多少带宽，猜多浪费猜少又很慢 By contrast, TCP dynamically adapts the rate of
+data transfer to the available network capacity.而TCP网络能动态调整
+
+        - With careful use of quality of service (QoS, prioritization and scheduling of
+packets) and admission control (rate-limiting senders), it is possible to emulate circuit
+switching on packet networks, or provide statistically bounded delay 服务质量和准入控制
+
+        - More generally, you can think of variable delays as a consequence of dynamic
+resource partitioning 网络带宽资源和CPU资源的原理类似，异步的思想能提高资源利用率，多租户（multi-tenancy）能够提高资源利用率，但是延迟不变得不确定 but it has the downside of variable delays. 所以延迟不确定并不是网络的必然结果，实际是利益的权衡。we have to assume that network congestion, queueing, and unbounded
+delays will happen. Consequently, there’s no “correct” value for timeouts—they need
+to be determined experimentally
 
 
+### Unreliable Clocks
 
+    - 
 
         
 
