@@ -107,10 +107,3 @@ resource partitioning 网络带宽资源和CPU资源的原理类似，异步的�
 delays will happen. Consequently, there’s no “correct” value for timeouts—they need
 to be determined experimentally
 
-
-### Unreliable Clocks
-
-    - 
-
-        
-
