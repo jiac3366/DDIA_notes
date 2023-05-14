@@ -172,13 +172,8 @@ If the partitioning is unfair, so that some partitions have more data or queries
         - The partition boundaries might be chosen manually by an administrator, or the data‐
           base can choose them automatically 因为分区的分界需要和数据相适应，按照例子Figure 6-2， 即便是每2个字母一个分区也会导致其中分区倾斜
 
-<<<<<<< HEAD
-        - Within each partition, we can keep keys in sorted order. This has the advantage that range scans are easy, and you can treat the key as a concatenated index in order to fetch several related records in one
-          query. 排好的数据使得range scan更加高效, 因为容易得知数据的边界；如果数据按照多个key排好序，那么按照多个key的range scan也会高效，多重索引原理也是如此
-=======
         - Within each partition, we can **keep keys in sorted order**( a partition owns all the keys
 from some minimum up to some maximum). This has the advantage that range scans are easy, and you can treat the key as a concatenated index in order to fetch several related records in one query. 按照排好的key分区使得range scan更加高效, 因为容易得知分区的数据边界；如果按照排好序的多个key分区，那么按照多个key的range scan也会高效。多重索引的原理也是如此。
->>>>>>> 574f2b704b4bea411ac8372fdf92008e8ca4a057
 
         - 如何选择好分区的key: one partition per day will lead to one partition can be overloaded with writes on one day
           while others sit idle。 单一高层次维度的key（时间某一天）会造成热点节点，所以可以在key中加入一些其他分散维度的key（某一个传感器）。So we could prefix each
@@ -194,19 +189,13 @@ from some minimum up to some maximum). This has the advantage that range scans a
     - ### Partitioning by Hash of Key
 
         - We should have  A good hash function which such as: Whenever you give it a new string, it
-<<<<<<< HEAD
-          returns a seemingly random number between 0 and 232 − 1, Once you have a suitable hash function for keys, you can assign each partition a
-          range of hashes (rather than a range of keys) every key whose hash falls within a
+
+          returns a seemingly random number between 0 and 232 − 1, Once you have a suitable hash function for keys, you can assign each partition **a
+          range of hashes** (rather than a range of keys) every key whose hash falls within a
           partition’s range will be stored in that partition. The partition
           boundaries can be evenly spaced, or they can be chosen pseudorandomly (in which
-          case the technique is sometimes known as consistent hashing).
-=======
-returns a seemingly random number between 0 and 232 − 1, Once you have a suitable hash function for keys, you can assign each partition **a
-range of hashes** (rather than a range of keys) every key whose hash falls within a
-partition’s range will be stored in that partition. The partition
-boundaries can be evenly spaced, or they can be chosen pseudorandomly (in which
-case the technique is sometimes known as consistent hashing). 注意，每个数据的key落在某个区间，就去到某个分区；可以减小节点增加或删除时rebalancing的规模？分区数一般比节点数要大，而且尽量大点，
->>>>>>> 574f2b704b4bea411ac8372fdf92008e8ca4a057
+          case the technique is sometimes known as consistent hashing). 注意，每个数据的key落在某个区间，就去到某个分区；可以减小节点增加或删除时rebalancing的规模？分区数一般比节点数要大，而且尽量大点，
+
 
         - Consistent Hashing: It uses randomly chosen partition boundaries to avoid the need for central control or
           distributed consensus. Note that consistent here has nothing to do with replica consis‐
@@ -214,19 +203,6 @@ case the technique is sometimes known as consistent hashing). 注意，每个数
           particular approach to rebalancing. 一种将数据均匀分布的算法
 
         - The pros and crons of Partitioning by Hash of Key is opposite of Partitioning by Hash of Key.  
-<<<<<<< HEAD
-
-            - In MongoDB, if you have enabled hash-based sharding mode, any range query
-              has to be sent to all partitions
-
-            - Range queries on the primary key are not sup‐
-              ported by Riak, Couchbase, or Voldemort.
-
-            - Cassandra achieves a compromise between the two partitioning strategies . A table in Cassandra can be declared with a compound primary key consisting of
-              several columns. The first part of that key is hashed to determine the partition,
-              but the other columns are used as a concatenated index for sorting the data in Cassandra’s SSTables. A query therefore cannot search for a range of values within the first column of a compound key, but if it specifies a fixed value for the first column, it
-              can perform an efficient range scan over the other columns of the key. 多列作为主键的情况下，如果使用第一列进行分区，并且在分区内的该列都相同，那么就可以对后面的列进行范围查询.
-=======
         
             - In MongoDB, if you have enabled hash-based sharding mode, any range query as to be sent to all partitions
 
@@ -236,7 +212,6 @@ case the technique is sometimes known as consistent hashing). 注意，每个数
 several columns. The first part of that key is hashed to determine the partition,
 but the other columns are used as a concatenated index for sorting the data in Cassandra’s SSTables. A query therefore cannot search for a range of values within the first column of a compound key, but if it specifies a fixed value for the first column, it
 can perform an efficient range scan over the other columns of the key. Cassandra是SSTables为底层结构，其他列用做SSTables的索引了，它在固定第一列（分区key）的基础上, 对后面的列可以进行高效的范围查询.
->>>>>>> 574f2b704b4bea411ac8372fdf92008e8ca4a057
 
         - A celebrity user with millions of followers may cause a storm of
           activity when they do something. Sulotion: For
@@ -258,18 +233,10 @@ can perform an efficient range scan over the other columns of the key. Cassandra
 
     - ### Partitioning Secondary Indexes by Document
 
-<<<<<<< HEAD
-        - As shown in Figure 6-4, In this indexing approach, each partition is completely separate: each partition main‐
-          tains its own secondary indexes, covering only the documents in that partition. It
-          doesn’t care what data is stored in other partitions, As mentioned above, read will be slow cause need to combine the result.  Nevertheless, it is widely used: Mon‐
-          goDB, Riak [15], Cassandra [16], Elasticsearch [17], SolrCloud [18], and VoltDB [19]
-          all use document-partitioned secondary indexes
-=======
         - As shown in Figure 6-4, In this indexing approach, each partition is completely separate: each partition maintains its own secondary indexes, covering only the documents in that partition. It
 doesn’t care what data is stored in other partitions, As mentioned above, read will be slow cause need to combine the result.  Nevertheless, it is widely used: Mon‐
 goDB, Riak [15], Cassandra [16], Elasticsearch [17], SolrCloud [18], and VoltDB [19]
 all use document-partitioned secondary indexes
->>>>>>> 574f2b704b4bea411ac8372fdf92008e8ca4a057
 
         - Most database vendors recommend
           that you structure your partitioning scheme so that secondary index queries can be
